@@ -1,0 +1,19 @@
+name = "my-web"
+pages_build_output_dir = "out"
+compatibility_date = "2024-09-23"
+
+[vars]
+NEXT_PUBLIC_SITE_URL = "http://localhost:8788"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "my-portfolio-db"
+database_id = "local-d1-binding"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "local-kv-binding"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "my-portfolio-assets"
