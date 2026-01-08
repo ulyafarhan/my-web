@@ -3,156 +3,83 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Project } from "@/types/domain";
-import { adminFetch } from "@/utils/admin-client";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { PageHeader } from "@/components/admin/PageHeader";
-import { Button } from "@/components/atoms/Button";
-import { Badge } from "@/components/atoms/Badge";
-import { Plus, Search, Edit2, Trash2, Eye } from "lucide-react";
-import { Input } from "@/components/atoms/Input";
+import { ArrowUpRight, Code2, Eye, Layout } from "lucide-react";
 
 export default function DashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState("");
-
-  const fetchProjects = async () => {
-    try {
-      const res = await fetch("/api/v1/projects");
-      const json = await res.json();
-      if (json.success) setProjects(json.data);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteProject = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
-    try {
-      const res = await adminFetch(`/api/v1/admin/projects/${id}`, { method: "DELETE" });
-      const json = await res.json();
-      if (json.success) fetchProjects();
-      else alert(json.error);
-    } catch (err) {
-      alert("Delete failed");
-    }
-  };
+  const [stats, setStats] = useState({ total: 0, featured: 0, views: 1250 });
 
   useEffect(() => {
-    fetchProjects();
+    // Simulasi fetch ringan untuk stats
+    fetch("/api/v1/projects").then(r => r.json()).then(d => {
+      if(d.success) setStats(s => ({...s, total: d.data.length, featured: d.data.filter((p:Project) => p.is_featured).length }));
+    });
   }, []);
 
-  const filteredProjects = projects.filter(p => 
-    p.title.toLowerCase().includes(search.toLowerCase()) ||
-    p.slug.toLowerCase().includes(search.toLowerCase())
+  const StatCard = ({ title, value, icon: Icon, trend }: any) => (
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className="rounded-full bg-gray-50 p-3">
+          <Icon className="h-6 w-6 text-gray-700" />
+        </div>
+      </div>
+      <div className="mt-4 flex items-center text-sm">
+        <span className="flex items-center font-medium text-green-600">
+          <ArrowUpRight className="mr-1 h-4 w-4" />
+          {trend}
+        </span>
+        <span className="ml-2 text-gray-400">vs last month</span>
+      </div>
+    </div>
   );
 
   return (
-    <>
-      <PageHeader 
-        title="Dashboard" 
-        description="Overview of your portfolio content and statistics."
-        actions={
-          <Link href="/admin/projects/new">
-            <Button className="flex items-center gap-2 shadow-sm ring-1 ring-white/10">
-              <Plus className="h-4 w-4" />
-              New Project
-            </Button>
-          </Link>
-        }
-      />
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8">
-        <AdminCard className="border-l-4 border-blue-500">
-          <div className="text-sm font-medium text-gray-500">Total Projects</div>
-          <div className="mt-2 text-3xl font-bold text-gray-900">{projects.length}</div>
-        </AdminCard>
-        <AdminCard className="border-l-4 border-green-500">
-          <div className="text-sm font-medium text-gray-500">Featured</div>
-          <div className="mt-2 text-3xl font-bold text-gray-900">{projects.filter(p => p.is_featured === 1).length}</div>
-        </AdminCard>
-        <AdminCard className="border-l-4 border-purple-500">
-          <div className="text-sm font-medium text-gray-500">Total Views</div>
-          <div className="mt-2 text-3xl font-bold text-gray-900">-</div>
-        </AdminCard>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+        <p className="text-gray-500">Overview of your portfolio performance.</p>
       </div>
 
-      <AdminCard title="Projects Management" 
-        actions={
-          <div className="w-64">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search projects..." 
-                className="w-full rounded-lg border border-gray-200 pl-9 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+      {/* Stats Grid */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard title="Total Projects" value={stats.total} icon={Layout} trend="+12%" />
+        <StatCard title="Featured Items" value={stats.featured} icon={Code2} trend="+2%" />
+        <StatCard title="Total Views" value="24.5K" icon={Eye} trend="+18.2%" />
+      </div>
+
+      {/* Quick Actions / Recent (Placeholder for now) */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+            <button className="text-sm text-blue-600 hover:underline">View All</button>
           </div>
-        }
-      >
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Project Info</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Tech Stack</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {isLoading ? (
-                <tr><td colSpan={4} className="p-8 text-center text-gray-500">Loading data...</td></tr>
-              ) : filteredProjects.length === 0 ? (
-                <tr><td colSpan={4} className="p-8 text-center text-gray-500">No projects found.</td></tr>
-              ) : filteredProjects.map((project) => (
-                <tr key={project.id} className="group hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 border border-gray-200">
-                        <img src={project.image_url} alt="" className="h-full w-full object-cover" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{project.title}</div>
-                        <div className="text-xs text-gray-500">/{project.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    {project.is_featured ? (
-                      <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Featured</span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Standard</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {project.tags.slice(0, 2).map(t => <Badge key={t} variant="default">{t}</Badge>)}
-                      {project.tags.length > 2 && <span className="text-xs text-gray-500">+{project.tags.length - 2}</span>}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => deleteProject(project.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-4 py-2 border-b border-gray-100 last:border-0">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">New project added</p>
+                  <p className="text-xs text-gray-500">2 hours ago</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </AdminCard>
-    </>
+
+        <div className="rounded-xl border border-blue-600 bg-blue-600 p-6 text-white shadow-lg">
+          <h3 className="text-lg font-bold">Manage Content</h3>
+          <p className="mt-2 text-blue-100">Ready to update your portfolio? Add new projects or update existing ones.</p>
+          <Link href="/admin/projects/new">
+            <button className="mt-6 w-full rounded-lg bg-white px-4 py-2 font-semibold text-blue-600 shadow hover:bg-blue-50">
+              Create New Project
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

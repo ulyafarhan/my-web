@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-border: #e5e7eb;
+  --color-ring: #2563eb;
+}
+
 :root {
   --foreground-rgb: 17, 24, 39;
   --background-rgb: 255, 255, 255;
@@ -7,12 +15,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background: #f8fafc;
+  font-family: var(--font-sans); /* Menggunakan font sans secara global */
   -webkit-font-smoothing: antialiased;
-}
-
-@layer base {
-  h1, h2, h3, h4 {
-    @apply tracking-tight;
-  }
 }
