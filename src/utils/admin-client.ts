@@ -1,10 +1,8 @@
 export const ADMIN_KEY = "pf_admin_token";
 
 export const getAdminToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(ADMIN_KEY);
-  }
-  return null;
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("admin_token");
 };
 
 export const setAdminToken = (token: string) => {
@@ -22,16 +20,15 @@ export const logoutAdmin = () => {
 
 export const adminFetch = async (url: string, options: RequestInit = {}) => {
   const token = getAdminToken();
-  const headers = {
-    ...options.headers,
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  };
-
-  const res = await fetch(url, { ...options, headers });
-  if (res.status === 401) {
-    logoutAdmin();
-    throw new Error("Unauthorized");
+  
+  const headers = new Headers(options.headers);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
-  return res;
+  headers.set("Content-Type", "application/json");
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 };

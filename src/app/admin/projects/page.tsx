@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Project } from "@/types/domain";
 import { adminFetch } from "@/utils/admin-client";
-import { Plus, Search, MoreHorizontal, Pencil, Trash } from "lucide-react";
+import { Plus, Search, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 
 export default function ProjectsPage() {
@@ -28,9 +28,13 @@ export default function ProjectsPage() {
     if (res.ok) fetchProjects();
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-  const filtered = projects.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = projects.filter((p) =>
+    p.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -48,27 +52,19 @@ export default function ProjectsPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {/* Toolbar */}
         <div className="flex items-center gap-4 border-b border-gray-200 p-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search projects..." 
+            <input
+              type="text"
+              placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-md border border-gray-200 py-2 pl-9 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
-          <div className="flex gap-2">
-            <select className="rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm outline-none">
-              <option>All Status</option>
-              <option>Featured</option>
-            </select>
-          </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500">
@@ -81,51 +77,80 @@ export default function ProjectsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {isLoading ? (
-                <tr><td colSpan={4} className="p-8 text-center">Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={4} className="p-8 text-center text-gray-500">No projects found.</td></tr>
-              ) : filtered.map((project) => (
-                <tr key={project.id} className="group hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 overflow-hidden rounded-lg bg-gray-100 border border-gray-200">
-                         {/* Fallback image if null */}
-                        <img src={project.image_url || "/file.svg"} className="h-full w-full object-cover" alt="" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{project.title}</div>
-                        <div className="text-xs text-gray-400">{project.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {project.is_featured ? (
-                      <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Featured</span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">Standard</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {project.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs text-gray-600">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                      <button className="p-1.5 text-gray-400 hover:text-blue-600">
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => deleteProject(project.id)} className="p-1.5 text-gray-400 hover:text-red-600">
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </div>
+                <tr>
+                  <td colSpan={4} className="p-8 text-center">
+                    Loading...
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-gray-500">
+                    No projects found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((project) => (
+                  <tr key={project.id} className="group hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 overflow-hidden rounded-lg bg-gray-100 border border-gray-200">
+                          <img
+                            src={project.image_url || "/file.svg"}
+                            className="h-full w-full object-cover"
+                            alt=""
+                          />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {project.title}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {project.slug}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {project.is_featured ? (
+                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                          Featured
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                          Standard
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {project.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs text-gray-600"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Link href={`/admin/projects/edit?id=${project.id}`}>
+                          <button className="p-1.5 text-gray-400 hover:text-blue-600">
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                        </Link>
+                        <button
+                          onClick={() => deleteProject(project.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-600"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
