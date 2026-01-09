@@ -1,85 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Project } from "@/types/domain";
-import { ArrowUpRight, Code2, Eye, Layout } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ArrowUp, DollarSign, Eye, ShoppingCart, Users } from "lucide-react";
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState({ total: 0, featured: 0, views: 1250 });
+// Chart harus di-import secara dynamic agar tidak error saat build (SSR issue)
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-  useEffect(() => {
-    // Simulasi fetch ringan untuk stats
-    fetch("/api/v1/projects").then(r => r.json()).then(d => {
-      if(d.success) setStats(s => ({...s, total: d.data.length, featured: d.data.filter((p:Project) => p.is_featured).length }));
-    });
-  }, []);
+const DashboardPage = () => {
+  // Config Chart
+  const chartOptions: any = {
+    chart: { type: "area", height: 350, toolbar: { show: false } },
+    colors: ["#3C50E0", "#80CAEE"],
+    stroke: { curve: "smooth", width: 2 },
+    dataLabels: { enabled: false },
+    xaxis: { categories: ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"] },
+    grid: { show: true, borderColor: "#E2E8F0" },
+  };
 
-  const StatCard = ({ title, value, icon: Icon, trend }: any) => (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-        </div>
-        <div className="rounded-full bg-gray-50 p-3">
-          <Icon className="h-6 w-6 text-gray-700" />
-        </div>
-      </div>
-      <div className="mt-4 flex items-center text-sm">
-        <span className="flex items-center font-medium text-green-600">
-          <ArrowUpRight className="mr-1 h-4 w-4" />
-          {trend}
-        </span>
-        <span className="ml-2 text-gray-400">vs last month</span>
-      </div>
-    </div>
-  );
+  const chartSeries = [
+    { name: "Total Views", data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 51] },
+    { name: "Total Revenue", data: [10, 15, 20, 25, 20, 25, 30, 25, 30, 25, 30, 35] },
+  ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="text-gray-500">Overview of your portfolio performance.</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard title="Total Projects" value={stats.total} icon={Layout} trend="+12%" />
-        <StatCard title="Featured Items" value={stats.featured} icon={Code2} trend="+2%" />
-        <StatCard title="Total Views" value="24.5K" icon={Eye} trend="+18.2%" />
-      </div>
-
-      {/* Quick Actions / Recent (Placeholder for now) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Recent Activity</h3>
-            <button className="text-sm text-blue-600 hover:underline">View All</button>
-          </div>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-4 py-2 border-b border-gray-100 last:border-0">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">New project added</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
+    <div className="space-y-6">
+      {/* 4 Kartu Statistik Atas */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+        {[
+            { title: "Total Views", val: "3.456K", icon: Eye, color: "text-blue-500" },
+            { title: "Total Profit", val: "$45,2K", icon: DollarSign, color: "text-green-500" },
+            { title: "New Product", val: "2,450", icon: ShoppingCart, color: "text-orange-500" },
+            { title: "Total Users", val: "3.456", icon: Users, color: "text-purple-500" },
+        ].map((item, i) => (
+            <div key={i} className="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-gray-100 dark:bg-meta-4">
+                    <item.icon className={`h-6 w-6 ${item.color}`} />
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                <div className="mt-4 flex items-end justify-between">
+                    <div>
+                        <h4 className="text-2xl font-bold text-black dark:text-white">{item.val}</h4>
+                        <span className="text-sm font-medium text-gray-500">{item.title}</span>
+                    </div>
+                    <span className="flex items-center gap-1 text-sm font-medium text-green-500">
+                        0.43% <ArrowUp className="h-3 w-3" />
+                    </span>
+                </div>
+            </div>
+        ))}
+      </div>
 
-        <div className="rounded-xl border border-blue-600 bg-blue-600 p-6 text-white shadow-lg">
-          <h3 className="text-lg font-bold">Manage Content</h3>
-          <p className="mt-2 text-blue-100">Ready to update your portfolio? Add new projects or update existing ones.</p>
-          <Link href="/admin/projects/new">
-            <button className="mt-6 w-full rounded-lg bg-white px-4 py-2 font-semibold text-blue-600 shadow hover:bg-blue-50">
-              Create New Project
-            </button>
-          </Link>
+      {/* Main Chart */}
+      <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
+        <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
+            <div className="flex w-full flex-wrap gap-3 sm:gap-5">
+                <h4 className="text-xl font-bold text-black dark:text-white">Analitik Kunjungan</h4>
+            </div>
+        </div>
+        <div className="-ml-5">
+            <ReactApexChart options={chartOptions} series={chartSeries} type="area" height={350} />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardPage;

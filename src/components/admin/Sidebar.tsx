@@ -2,95 +2,98 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSidebar } from "@/context/SidebarContext";
 import { 
   LayoutDashboard, 
   FolderKanban, 
   Settings, 
+  User, 
   LogOut, 
-  Layers, 
-  Users,
-  BarChart3,
-  Globe
+  Globe, 
+  ChevronLeft,
+  PieChart
 } from "lucide-react";
-import { logoutAdmin } from "@/utils/admin-client";
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
 
-  const mainNav = [
-    { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Projects", href: "/admin/projects", icon: FolderKanban },
-    { label: "Content", href: "/admin/content", icon: Layers },
-    { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  const menuGroups = [
+    {
+      name: "MENU UTAMA",
+      menuItems: [
+        { icon: LayoutDashboard, label: "Dashboard", route: "/admin/dashboard" },
+        { icon: FolderKanban, label: "Proyek", route: "/admin/projects" },
+        { icon: PieChart, label: "Analitik", route: "/admin/analytics" },
+      ],
+    },
+    {
+      name: "PENGATURAN",
+      menuItems: [
+        { icon: User, label: "Profil Team", route: "/admin/team" },
+        { icon: Settings, label: "Settings", route: "/admin/settings" },
+      ],
+    },
   ];
-
-  const systemNav = [
-    { label: "Team", href: "/admin/team", icon: Users },
-    { label: "Settings", href: "/admin/settings", icon: Settings },
-  ];
-
-  const NavItem = ({ item }: { item: any }) => {
-    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-    return (
-      <Link
-        href={item.href}
-        className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-          isActive
-            ? "bg-gray-900 text-white shadow-md"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-        }`}
-      >
-        <item.icon className={`h-4 w-4 ${isActive ? "text-white" : "text-gray-500 group-hover:text-gray-900"}`} />
-        {item.label}
-      </Link>
-    );
-  };
 
   return (
-    <aside className="flex h-full flex-col border-r border-gray-200 bg-white">
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-gray-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-white">
-            <Globe className="h-5 w-5" />
-          </div>
-          <span>Nexus<span className="text-gray-400">Admin</span></span>
+    <aside
+      className={`absolute left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
+      {/* Header Sidebar */}
+      <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 text-2xl font-bold text-white">
+          <Globe className="h-8 w-8 text-blue-500" />
+          <span>Nexus<span className="text-blue-500">Admin</span></span>
         </Link>
+
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="block lg:hidden text-white"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-6">
-        <nav className="space-y-6">
-          <div>
-            <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              Dashboard
-            </div>
-            <div className="space-y-1">
-              {mainNav.map((item) => (
-                <NavItem key={item.href} item={item} />
-              ))}
-            </div>
-          </div>
+      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+        <nav className="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+          {menuGroups.map((group, groupIndex) => (
+            <div key={groupIndex}>
+              <h3 className="mb-4 ml-4 text-sm font-semibold text-gray-400">
+                {group.name}
+              </h3>
 
-          <div>
-            <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              System
+              <ul className="mb-6 flex flex-col gap-1.5">
+                {group.menuItems.map((menuItem, menuIndex) => {
+                  const isActive = pathname === menuItem.route || pathname.startsWith(`${menuItem.route}/`);
+                  return (
+                    <li key={menuIndex}>
+                      <Link
+                        href={menuItem.route}
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium duration-300 ease-in-out hover:bg-gray-800 ${
+                          isActive ? "bg-gray-800 text-white" : "text-gray-400"
+                        }`}
+                      >
+                        <menuItem.icon className="h-5 w-5" />
+                        {menuItem.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-            <div className="space-y-1">
-              {systemNav.map((item) => (
-                <NavItem key={item.href} item={item} />
-              ))}
-            </div>
-          </div>
+          ))}
         </nav>
       </div>
-
-      <div className="border-t border-gray-200 p-4">
-        <button
-          onClick={logoutAdmin}
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+      
+      {/* Footer Sidebar (Logout) */}
+      <div className="mt-auto p-4 border-t border-gray-800">
+         <button className="flex w-full items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-red-500 duration-300 ease-in-out hover:bg-gray-800">
+            <LogOut className="h-5 w-5" />
+            Keluar
+         </button>
       </div>
     </aside>
   );
